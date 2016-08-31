@@ -1,6 +1,7 @@
 'use strict';
 
 var chance = require('chance')(123);
+var toonAvatar = require('cartoon-avatar');
 var Promise = require('bluebird');
 
 var db = require('./server/db');
@@ -20,19 +21,20 @@ function doTimes (n, fn) {
   return results;
 }
 
-function randPhoto () {
-  var g = chance.pick(['men', 'women']);
-  var n = chance.natural({
-    min: 0,
-    max: 96
+function randPhoto (gender) {
+  gender = gender.toLowerCase();
+  var id = chance.natural({
+    min: 1,
+    max: gender === 'female' ? 114 : 129
   });
-  return 'http://api.randomuser.me/portraits/' + g + '/' + n + '.jpg'
+  return toonAvatar.generate_avatar({ gender: gender, id: id });
 }
 
 function randUser () {
+  var gender = chance.gender();
   return User.build({
-    name: [chance.first(), chance.last()].join(' '),
-    photo: randPhoto(),
+    name: [chance.first({gender: gender}), chance.last()].join(' '),
+    photo: randPhoto(gender),
     phone: chance.phone(),
     email: emails.pop(),
     password: chance.word(),
@@ -120,6 +122,7 @@ db.sync({force: true})
   console.error('Error while seeding');
   console.error(err.stack);
 })
-.then(function () {
-  process.exit();
+.finally(function () {
+  db.close();
+  return null;
 });

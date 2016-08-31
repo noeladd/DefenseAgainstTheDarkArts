@@ -1,13 +1,8 @@
 'use strict';
 
 var router = require('express').Router();
-var morgan = require('morgan');
+var volleyball = require('volleyball');
 
-morgan.token('me', function (req) {
-  if (req.user) return req.user.name;
-  else return '(visitor)';
-});
-
-router.use(morgan(':method :url :me :status :response-time ms - :res[content-length]'));
+router.use(volleyball);
 
 module.exports = router;
